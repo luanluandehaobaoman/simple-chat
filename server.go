@@ -48,7 +48,7 @@ func (s *Server) BroadCast(user *User, msg string) {
 
 func (s *Server) Handler(conn net.Conn) {
 	// current connect
-	fmt.Println("connect successfully from:  ", conn.RemoteAddr().String())
+	fmt.Println("connect successfully from= ==>", conn.RemoteAddr().String())
 	user := NewUser(conn, s)
 	//用户上线加到OnlineMap
 
@@ -85,11 +85,10 @@ func (s *Server) Handler(conn net.Conn) {
 		select {
 		case <-isLive:
 		//当前用户活跃，重置定时器；不做任何事情，更新下面的dingshiqi
-		case <-time.After(time.Second * 60):
+		case <-time.After(time.Second * 300):
 			// 超时后强制关闭User
 			user.SendMsg("超时强制下线\n")
 			//	close(user.C) //销毁用的资源
-
 			//关闭链接
 			conn.Close()
 			//退出当前handler

@@ -69,6 +69,8 @@ func (u *User) DoMessage(msg string) {
 			u.SendMsg(onlineMsg)
 		}
 		u.server.mapLock.Unlock()
+
+		//支持改名
 	} else if len(msg) > 7 && msg[:7] == "rename|" { //消息格式：rename|Arthur
 		newName := strings.Split(msg, "|")[1]
 
@@ -86,6 +88,31 @@ func (u *User) DoMessage(msg string) {
 			u.Name = newName
 			u.SendMsg("您已经更新用户名为：" + u.Name + "\n")
 		}
+
+		//支持私聊，消息格式：to|张三|消息内容
+	} else if len(msg) > 4 && msg[:3] == "to|" {
+
+		//1.获取用户名
+		remoteName := strings.Split(msg, "|")[1]
+		if remoteName == "" {
+			u.SendMsg("消息格式不正确，请使用'to|张三|消息内容'\n")
+			return
+		}
+
+		//2.根据用户名获取User对象
+		remoteUser, ok := u.server.OnlineMap[remoteName]
+		if !ok {
+			u.SendMsg("用户" + remoteName + "不存在\n")
+			return
+		}
+
+		//3.获取消息内容并发送
+		content := strings.Split(msg, "|")[2]
+		if content == "" {
+			u.SendMsg("无消息内容，请重新发送\n")
+			return
+		}
+		remoteUser.SendMsg("来自" + u.Name + "的消息:" + content + "\n")
 
 	} else {
 
