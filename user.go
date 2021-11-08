@@ -1,6 +1,10 @@
 package main
 
-import "net"
+import (
+	"fmt"
+	"net"
+	"strings"
+)
 
 type User struct {
 	Name   string
@@ -49,7 +53,10 @@ func (u *User) offline() {
 
 //给当前User对应的客户端发消息
 func (u *User) SendMsg(msg string) {
-	u.conn.Write([]byte(msg))
+	_, err := u.conn.Write([]byte(msg))
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 //用户处理消息的业务
@@ -62,6 +69,24 @@ func (u *User) DoMessage(msg string) {
 			u.SendMsg(onlineMsg)
 		}
 		u.server.mapLock.Unlock()
+	} else if len(msg) > 7 && msg[:7] == "rename|" { //消息格式：rename|Arthur
+		newName := strings.Split(msg, "|")[1]
+
+		//判断name是否已经存在
+		_, ok := u.server.OnlineMap[newName]
+
+		if ok {
+			u.SendMsg("当前用户名已存在")
+		} else {
+			u.server.mapLock.Lock()
+			delete(u.server.OnlineMap, u.Name)
+			u.server.OnlineMap[newName] = u
+			u.server.mapLock.Unlock()
+
+			u.Name = newName
+			u.SendMsg("您已经更新用户名为：" + u.Name + "\n")
+		}
+
 	} else {
 
 		u.server.BroadCast(u, msg)
@@ -72,6 +97,9 @@ func (u *User) DoMessage(msg string) {
 func (u *User) ListenMessage() {
 	for {
 		msg := <-u.C
-		u.conn.Write([]byte(msg + "\n"))
+		_, err := u.conn.Write([]byte(msg + "\n"))
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 }

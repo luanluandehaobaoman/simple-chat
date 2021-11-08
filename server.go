@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"sync"
 )
@@ -60,9 +61,11 @@ func (s *Server) Handler(conn net.Conn) {
 			if n == 0 {
 				//用户下线
 				user.offline()
+				return
 			}
-			if err != nil && err != nil {
+			if err != nil && err != io.EOF {
 				fmt.Println("conn Read err", err)
+				return
 			}
 			//提取用户消息(去除'\n')
 			msg := string(buf[:n-1])
