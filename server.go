@@ -5,6 +5,7 @@ import (
 	"io"
 	"net"
 	"sync"
+	"time"
 )
 
 type Server struct {
@@ -52,6 +53,8 @@ func (s *Server) Handler(conn net.Conn) {
 	//用户上线加到OnlineMap
 
 	user.Online()
+	//监听用户是否活跃的channel
+	isLive := make(chan bool)
 
 	//接收客户端发送的消息
 	go func() {
@@ -72,11 +75,27 @@ func (s *Server) Handler(conn net.Conn) {
 
 			//广播消息
 			user.DoMessage(msg)
+			isLive <- true
 		}
 	}()
 
 	//当前handler阻塞
-	//select {}
+
+	for {
+		select {
+		case <-isLive:
+		//当前用户活跃，重置定时器；不做任何事情，更新下面的dingshiqi
+		case <-time.After(time.Second * 60):
+			// 超时后强制关闭User
+			user.SendMsg("超时强制下线\n")
+			//	close(user.C) //销毁用的资源
+
+			//关闭链接
+			conn.Close()
+			//退出当前handler
+			return
+		}
+	}
 }
 
 //启动服务器的接口
