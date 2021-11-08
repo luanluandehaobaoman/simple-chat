@@ -1,7 +1,7 @@
 
 # simple-chat
 - a simple chat system
-## v1Cancel changes
+## v1 
 
 ## v2
 - 用户上线广播
