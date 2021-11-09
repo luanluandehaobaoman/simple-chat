@@ -44,12 +44,13 @@ func init() {
 	flag.IntVar(&serverPort, "port", 8888, "设置服务器端口")
 }
 func (client *Client) menu() bool {
-	var flag int
+	flag := 999
 	fmt.Println("1.公聊模式")
 	fmt.Println("2.私聊模式")
 	fmt.Println("3.更改用户名")
 	fmt.Println("0.退出")
 	fmt.Scanln(&flag)
+
 	if flag >= 0 && flag <= 3 {
 		client.flag = flag
 		return true
@@ -57,7 +58,7 @@ func (client *Client) menu() bool {
 		fmt.Println("请输入合法范围内的数字")
 		return false
 	}
-
+	return false
 }
 
 //处理server回应消息，知道显示到标准输出
