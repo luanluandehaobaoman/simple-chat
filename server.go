@@ -85,7 +85,7 @@ func (s *Server) Handler(conn net.Conn) {
 		select {
 		case <-isLive:
 		//当前用户活跃，重置定时器；不做任何事情，更新下面的dingshiqi
-		case <-time.After(time.Second * 300):
+		case <-time.After(time.Second * 900):
 			// 超时后强制关闭User
 			user.SendMsg("超时强制下线\n")
 			//	close(user.C) //销毁用的资源
