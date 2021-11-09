@@ -3,14 +3,16 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"net"
+	"os"
 )
 
 type Client struct {
 	ServerIp   string
 	ServerPort int
 	conn       net.Conn
-	name       string
+	Name       string
 	flag       int //当前客户端模式
 }
 
@@ -58,6 +60,31 @@ func (client *Client) menu() bool {
 
 }
 
+//处理server回应消息，知道显示到标准输出
+func (client *Client) DealResponse() {
+	io.Copy(os.Stdout, client.conn)
+
+	/*	//等价于
+		for {
+			buf:=make([]string,4096)
+			client.conn.Read(buf)
+			fmt.Println(buf)
+		}*/
+}
+
+func (client *Client) UpdateNmae() bool {
+	fmt.Println(">>>>>>>>请输入用户名")
+	fmt.Scanln(&client.Name)
+
+	sendMsg := "rename|" + client.Name + "\n"
+	_, err := client.conn.Write([]byte(sendMsg))
+	if err != nil {
+		fmt.Println("conn.Write.err", err)
+		return false
+	}
+	return true
+}
+
 func (c *Client) Run() {
 	for c.flag != 0 {
 		for c.menu() != true {
@@ -72,7 +99,9 @@ func (c *Client) Run() {
 			fmt.Println(">>>>>>>私聊模式选择")
 			break
 		case 3:
-			fmt.Println(">>>>>>>更新用户名选择选择")
+			//fmt.Println(">>>>>>>更新用户名选选择")
+			c.UpdateNmae()
+
 			break
 		}
 	}
@@ -85,6 +114,7 @@ func main() {
 		fmt.Println(">>>>>>>连接服务器失败……")
 		return
 	}
+	go client.DealResponse()
 	fmt.Println(">>>>>>>连接服务器成功……")
 	client.Run()
 }
