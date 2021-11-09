@@ -72,6 +72,28 @@ func (client *Client) DealResponse() {
 		}*/
 }
 
+func (client *Client) PublicChat() {
+	var chatMsg string
+	fmt.Println(">>>>>>>>请输入聊天内容，exit退出")
+
+	fmt.Scanln(&chatMsg)
+	for chatMsg != "exit" {
+		if len(chatMsg) != 0 {
+			sendMsg := chatMsg + "\n"
+			_, err := client.conn.Write([]byte(sendMsg))
+			if err != nil {
+				fmt.Println("conn.Write err:", err)
+				break
+			}
+		}
+		chatMsg = ""
+		fmt.Println(">>>>>>>>请输入聊天内容，exit退出")
+
+		fmt.Scanln(&chatMsg)
+	}
+
+}
+
 func (client *Client) UpdateNmae() bool {
 	fmt.Println(">>>>>>>>请输入用户名")
 	fmt.Scanln(&client.Name)
@@ -93,7 +115,8 @@ func (c *Client) Run() {
 		//根据不通模式处理业务
 		switch c.flag {
 		case 1:
-			fmt.Println(">>>>>>>公聊模式选择")
+			//fmt.Println(">>>>>>>公聊模式选择")
+			c.PublicChat()
 			break
 		case 2:
 			fmt.Println(">>>>>>>私聊模式选择")
